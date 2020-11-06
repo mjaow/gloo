@@ -6,6 +6,7 @@ option go_package = "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/options/tr
 import "gogoproto/gogo.proto";
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/any.proto";
 
 option (gogoproto.equal_all) = true;
 import "extproto/ext.proto";
@@ -22,6 +23,9 @@ message ListenerTracingSettings {
     // Requests can produce traces by random sampling or when the `x-client-trace-id` header is provided.
     // TracePercentages defines the limits for random, forced, and overall tracing percentages.
     TracePercentages trace_percentages = 3;
+    // Optional. If not specified, no tracing will be performed
+    // Provider defines the configuration for an external tracing provider.
+    Provider provider = 4;
 }
 
 // Contains settings for configuring Envoy's tracing capabilities at the route level.
@@ -52,4 +56,21 @@ message TracePercentages {
     // optional, defaults to 100.0
     // This should be a value between 0.0 and 100.0, with up to 6 significant digits.
     google.protobuf.FloatValue overall_sample_percentage = 3;
+}
+
+// Contains settings for configuring Envoy's HTTP tracer provider
+// See here for additional information on Envoy's tracer provider: https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/trace/v3/http_tracer.proto#envoy-v3-api-msg-config-trace-v3-tracing-http
+message Provider {
+    // Required. The name of the HTTP trace driver to instantiate. The name must match a supported HTTP trace driver.
+    // Built-in trace drivers:
+    //  envoy.tracers.lightstep
+    //  envoy.tracers.zipkin
+    //  envoy.tracers.dynamic_ot
+    //  envoy.tracers.datadog
+    //  envoy.tracers.opencensus
+    //  envoy.tracers.xray
+    string name = 1;
+    // Trace driver specific configuration which depends on the driver being instantiated.
+    // See the trace drivers for examples: https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/trace/trace
+    google.protobuf.Any typed_config = 2;
 }
