@@ -14,6 +14,7 @@ weight: 5
 - [ListenerTracingSettings](#listenertracingsettings)
 - [RouteTracingSettings](#routetracingsettings)
 - [TracePercentages](#tracepercentages)
+- [Provider](#provider)
   
 
 
@@ -36,6 +37,7 @@ See here for additional information about configuring tracing with Gloo: https:/
 "requestHeadersForTags": []string
 "verbose": bool
 "tracePercentages": .tracing.options.gloo.solo.io.TracePercentages
+"provider": .tracing.options.gloo.solo.io.Provider
 
 ```
 
@@ -44,6 +46,7 @@ See here for additional information about configuring tracing with Gloo: https:/
 | `requestHeadersForTags` | `[]string` | Optional. If specified, Envoy will include the headers and header values for any matching request headers. |  |
 | `verbose` | `bool` | Optional. If true, Envoy will include logs for streaming events. Default: false. |  |
 | `tracePercentages` | [.tracing.options.gloo.solo.io.TracePercentages](../tracing.proto.sk/#tracepercentages) | Requests can produce traces by random sampling or when the `x-client-trace-id` header is provided. TracePercentages defines the limits for random, forced, and overall tracing percentages. |  |
+| `provider` | [.tracing.options.gloo.solo.io.Provider](../tracing.proto.sk/#provider) | Optional. If not specified, no tracing will be performed Provider defines the configuration for an external tracing provider. |  |
 
 
 
@@ -90,6 +93,27 @@ TracePercentages defines the limits for random, forced, and overall tracing perc
 | `clientSamplePercentage` | [.google.protobuf.FloatValue](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/float-value) | Percentage of requests that should produce traces when the `x-client-trace-id` header is provided. optional, defaults to 100.0 This should be a value between 0.0 and 100.0, with up to 6 significant digits. |  |
 | `randomSamplePercentage` | [.google.protobuf.FloatValue](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/float-value) | Percentage of requests that should produce traces by random sampling. optional, defaults to 100.0 This should be a value between 0.0 and 100.0, with up to 6 significant digits. |  |
 | `overallSamplePercentage` | [.google.protobuf.FloatValue](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/float-value) | Overall percentage of requests that should produce traces. optional, defaults to 100.0 This should be a value between 0.0 and 100.0, with up to 6 significant digits. |  |
+
+
+
+
+---
+### Provider
+
+ 
+Contains settings for configuring Envoy's HTTP tracer provider
+See here for additional information on Envoy's tracer provider: https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/trace/v3/http_tracer.proto#envoy-v3-api-msg-config-trace-v3-tracing-http
+
+```yaml
+"name": string
+"typedConfig": .google.protobuf.Any
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `name` | `string` | Required. The name of the HTTP trace driver to instantiate. The name must match a supported HTTP trace driver. Built-in trace drivers: envoy.tracers.lightstep envoy.tracers.zipkin envoy.tracers.dynamic_ot envoy.tracers.datadog envoy.tracers.opencensus envoy.tracers.xray. |  |
+| `typedConfig` | [.google.protobuf.Any](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/any) | Trace driver specific configuration which depends on the driver being instantiated. See the trace drivers for examples: https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/trace/trace. |  |
 
 
 

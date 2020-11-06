@@ -1187,6 +1187,9 @@ apis:
   tracing.options.gloo.solo.io.ListenerTracingSettings:
     relativepath: reference/api/github.com/solo-io/gloo/projects/gloo/api/v1/options/tracing/tracing.proto.sk/#ListenerTracingSettings
     package: tracing.options.gloo.solo.io
+  tracing.options.gloo.solo.io.Provider:
+    relativepath: reference/api/github.com/solo-io/gloo/projects/gloo/api/v1/options/tracing/tracing.proto.sk/#Provider
+    package: tracing.options.gloo.solo.io
   tracing.options.gloo.solo.io.RouteTracingSettings:
     relativepath: reference/api/github.com/solo-io/gloo/projects/gloo/api/v1/options/tracing/tracing.proto.sk/#RouteTracingSettings
     package: tracing.options.gloo.solo.io
