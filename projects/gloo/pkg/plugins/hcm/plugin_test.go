@@ -1,8 +1,9 @@
 package hcm_test
 
 import (
-	"github.com/golang/protobuf/ptypes/any"
 	"time"
+
+	"github.com/golang/protobuf/ptypes/any"
 
 	envoytracing "github.com/envoyproxy/go-control-plane/envoy/type/tracing/v3"
 
