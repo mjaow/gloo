@@ -2,12 +2,15 @@ package tracing
 
 import (
 	envoyroute "github.com/envoyproxy/go-control-plane/envoy/api/v2/route"
+	envoy_config_trace_v3 "github.com/envoyproxy/go-control-plane/envoy/config/trace/v3"
 	envoyhttp "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	envoytracing "github.com/envoyproxy/go-control-plane/envoy/type/tracing/v3"
 	envoy_type "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/gogo/protobuf/types"
+	"github.com/solo-io/gloo/pkg/utils/protoutils"
 	v1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/options/hcm"
+	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/options/tracing"
 	"github.com/solo-io/gloo/projects/gloo/pkg/plugins"
 	hcmp "github.com/solo-io/gloo/projects/gloo/pkg/plugins/hcm"
 	"github.com/solo-io/gloo/projects/gloo/pkg/plugins/internal/common"
@@ -61,6 +64,7 @@ func (p *Plugin) ProcessHcmSettings(cfg *envoyhttp.HttpConnectionManager, hcmSet
 	}
 	trCfg.CustomTags = customTags
 	trCfg.Verbose = tracingSettings.Verbose
+	trCfg.Provider = envoyTracingProvider(tracingSettings)
 
 	// Gloo configures envoy as an ingress, rather than an egress
 	// 06/2020 removing below- OperationName field is being deprecated, and we set it to the default value anyway
@@ -76,6 +80,21 @@ func (p *Plugin) ProcessHcmSettings(cfg *envoyhttp.HttpConnectionManager, hcmSet
 	}
 	cfg.Tracing = trCfg
 	return nil
+}
+
+func envoyTracingProvider(tracingSettings *tracing.ListenerTracingSettings) *envoy_config_trace_v3.Tracing_Http {
+	typedConfig, err := protoutils.AnyGogoToPb(tracingSettings.Provider.GetTypedConfig())
+
+	if err != nil {
+		return nil
+	}
+
+	return &envoy_config_trace_v3.Tracing_Http{
+		Name: tracingSettings.Provider.GetName(),
+		ConfigType: &envoy_config_trace_v3.Tracing_Http_TypedConfig{
+			TypedConfig: typedConfig,
+		},
+	}
 }
 
 func envoySimplePercent(numerator float32) *envoy_type.Percent {
