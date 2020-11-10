@@ -60,7 +60,6 @@ func MarkPerFilterConfig(ctx context.Context, snap *v1.ApiSnapshot, in *v1.Route
 		}
 		return configureSingleDest(dest.Single, out.GetTypedPerFilterConfig(), filterName, perFilterConfig)
 	// intentionally ignored because destination is not specified at runtime, so perFilterConfig is useless
-	//TODO: include warning about not using this whenever possible in .proto
 	case *v1.RouteAction_ClusterHeader:
 		return nil
 	}

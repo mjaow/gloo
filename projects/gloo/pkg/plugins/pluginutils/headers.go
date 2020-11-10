@@ -36,6 +36,7 @@ func MarkHeaders(ctx context.Context, snap *v1.ApiSnapshot, in *v1.Route, out *e
 	case *v1.RouteAction_ClusterHeader:
 		return nil
 	}
+
 	err = errors.Errorf("unexpected destination type %v", reflect.TypeOf(inAction.Destination).Name())
 	logger := contextutils.LoggerFrom(ctx)
 	logger.DPanic("error: %v", err)
