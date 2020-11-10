@@ -202,7 +202,6 @@ to be usable by Gloo. (plugins currently need to be compiled into Gloo)
 "dlp": .dlp.options.gloo.solo.io.Config
 "bufferPerRoute": .envoy.extensions.filters.http.buffer.v3.BufferPerRoute
 "stagedTransformations": .transformation.options.gloo.solo.io.TransformationStages
-"clusterHeader": .google.protobuf.StringValue
 
 ```
 
@@ -232,7 +231,6 @@ to be usable by Gloo. (plugins currently need to be compiled into Gloo)
 | `dlp` | [.dlp.options.gloo.solo.io.Config](../enterprise/options/dlp/dlp.proto.sk/#config) | Enterprise-only: Config for data loss prevention. |  |
 | `bufferPerRoute` | [.envoy.extensions.filters.http.buffer.v3.BufferPerRoute](../../external/envoy/extensions/filters/http/buffer/v3/buffer.proto.sk/#bufferperroute) | BufferPerRoute can be used to set the maximum request size that the filter will buffer before the connection manager will stop buffering and return a 413 response. Note: If you have not set a global config (at the gateway level), this override will not do anything by itself. |  |
 | `stagedTransformations` | [.transformation.options.gloo.solo.io.TransformationStages](../options/transformation/transformation.proto.sk/#transformationstages) | Early transformations stage. These transformations run before most other options are processed. If the `regular` field is set in here, the `transformations` field is ignored. |  |
-| `clusterHeader` | [.google.protobuf.StringValue](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/string-value) | Envoy will determine the cluster to route to by reading the value of the HTTP header named by cluster_header from the request headers. If the header is not found or the referenced cluster does not exist, Envoy will return a 404 response. |  |
 
 
 

@@ -300,9 +300,6 @@ message RouteOptions {
     // If the `regular` field is set in here, the `transformations` field is ignored.
     transformation.options.gloo.solo.io.TransformationStages staged_transformations = 23;
 
-    // Envoy will determine the cluster to route to by reading the value of the HTTP header named by cluster_header from the request headers.
-    // If the header is not found or the referenced cluster does not exist, Envoy will return a 404 response.
-    google.protobuf.StringValue cluster_header = 24;
 }
 
 // Configuration for Destinations that are tied to the UpstreamSpec or ServiceSpec on that destination

@@ -343,6 +343,12 @@ func (t *translatorInstance) setRouteAction(params plugins.RouteParams, in *v1.R
 			Destinations: upstreamGroup.Destinations,
 		}
 		return t.setWeightedClusters(params, md, out, routeReport)
+	case *v1.RouteAction_ClusterHeader:
+		// ClusterHeader must use the naming convention {{namespace}}_{{clustername}}
+		out.ClusterSpecifier = &envoyroute.RouteAction_ClusterHeader{
+			ClusterHeader: dest.ClusterHeader,
+		}
+		return nil
 	}
 	return errors.Errorf("unknown upstream destination type")
 }
@@ -615,6 +621,9 @@ func ValidateRouteDestinations(snap *v1.ApiSnapshot, action *v1.RouteAction) err
 		return validateMultiDestination(upstreams, dest.Multi.Destinations)
 	case *v1.RouteAction_UpstreamGroup:
 		return validateUpstreamGroup(snap, dest.UpstreamGroup)
+	// Cluster Header can not be validated because the cluster name is not provided till runtime
+	case *v1.RouteAction_ClusterHeader:
+		return nil
 	}
 	return errors.Errorf("must specify either 'singleDestination', 'multipleDestinations' or 'upstreamGroup' for action")
 }

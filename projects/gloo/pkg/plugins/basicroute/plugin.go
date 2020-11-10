@@ -52,9 +52,6 @@ func (p *Plugin) ProcessRoute(params plugins.RouteParams, in *v1.Route, out *env
 	if err := applyUpgrades(in, out); err != nil {
 		return err
 	}
-	if err := applyClusterHeader(in, out); err != nil {
-		return err
-	}
 
 	return nil
 }
@@ -134,21 +131,6 @@ func applyHostRewrite(in *v1.Route, out *envoyroute.Route) error {
 		return errors.Errorf("unimplemented host rewrite type: %T", rewriteType)
 	}
 
-	return nil
-}
-
-func applyClusterHeader(in *v1.Route, out *envoyroute.Route) error {
-	clusterHeader := in.GetOptions().GetClusterHeader()
-	if clusterHeader == nil {
-		return nil
-	}
-	routeAction, ok := out.Action.(*envoyroute.Route_Route)
-	if !ok {
-		return errors.Errorf("cluster header is only available for Route Actions")
-	}
-	routeAction.Route.ClusterSpecifier = &envoyroute.RouteAction_ClusterHeader{
-		ClusterHeader: clusterHeader.Value,
-	}
 	return nil
 }
 

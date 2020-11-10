@@ -33,8 +33,9 @@ func MarkHeaders(ctx context.Context, snap *v1.ApiSnapshot, in *v1.Route, out *e
 		return configureHeadersMultiDest(dest.Multi.Destinations, outAction, headers)
 	case *v1.RouteAction_Single:
 		return configureHeadersSingleDest(dest.Single, &out.RequestHeadersToAdd, headers)
+	case *v1.RouteAction_ClusterHeader:
+		return nil
 	}
-
 	err = errors.Errorf("unexpected destination type %v", reflect.TypeOf(inAction.Destination).Name())
 	logger := contextutils.LoggerFrom(ctx)
 	logger.DPanic("error: %v", err)

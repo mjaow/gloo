@@ -17,45 +17,6 @@ import (
 	. "github.com/solo-io/gloo/projects/gloo/pkg/plugins/basicroute"
 )
 
-var _ = Describe("cluster header", func() {
-	It("works", func() {
-		p := NewPlugin()
-		clusterHeader := "test-cluster-header"
-		routeAction := &envoyroute.RouteAction{
-			ClusterSpecifier: &envoyroute.RouteAction_ClusterHeader{
-				ClusterHeader: clusterHeader,
-			},
-		}
-		out := &envoyroute.Route{
-			Action: &envoyroute.Route_Route{
-				Route: routeAction,
-			},
-		}
-		err := p.ProcessRoute(plugins.RouteParams{}, &v1.Route{
-			Options: &v1.RouteOptions{
-				ClusterHeader: &types.StringValue{
-					Value: clusterHeader,
-				},
-			},
-		}, out)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(routeAction.ClusterSpecifier.(*envoyroute.RouteAction_ClusterHeader).ClusterHeader).To(Equal(clusterHeader))
-	})
-
-	It("does not write cluster specifier if not provided", func() {
-		p := NewPlugin()
-		routeAction := &envoyroute.RouteAction{}
-		out := &envoyroute.Route{
-			Action: &envoyroute.Route_Route{
-				Route: routeAction,
-			},
-		}
-		err := p.ProcessRoute(plugins.RouteParams{}, &v1.Route{}, out)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(routeAction.ClusterSpecifier).To(BeNil())
-	})
-})
-
 var _ = Describe("prefix rewrite", func() {
 	It("works", func() {
 		p := NewPlugin()

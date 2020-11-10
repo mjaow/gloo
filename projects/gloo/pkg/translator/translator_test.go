@@ -3,7 +3,6 @@ package translator_test
 import (
 	"context"
 	"fmt"
-
 	envoycore_sk "github.com/solo-io/solo-kit/pkg/api/external/envoy/api/v2/core"
 
 	envoycore "github.com/envoyproxy/go-control-plane/envoy/api/v2/core"
@@ -930,6 +929,32 @@ var _ = Describe("Translator", func() {
 			Expect(flipOrderHttpFilters).To(Equal(upstreamsHttpFilters))
 		})
 
+	})
+
+	FContext("when handling cluster header", func() {
+
+		BeforeEach(func() {
+			routes = []*v1.Route{{
+				Name:     "testRouteClusterHeader",
+				Matchers: []*matchers.Matcher{matcher},
+				Action: &v1.Route_RouteAction{
+					RouteAction: &v1.RouteAction{
+						Destination: &v1.RouteAction_ClusterHeader{
+							ClusterHeader: "test-cluster",
+						},
+					},
+				},
+			}}
+		})
+
+		It("should translate cluster header", func() {
+			translate()
+			route := routeConfiguration.VirtualHosts[0].Routes[0].GetRoute()
+			Expect(route).ToNot(BeNil())
+			cluster := route.GetClusterHeader()
+			Expect(cluster).ToNot(BeNil())
+			Expect(cluster).To(Equal("test-cluster"))
+		})
 	})
 
 	Context("when handling upstream groups", func() {
