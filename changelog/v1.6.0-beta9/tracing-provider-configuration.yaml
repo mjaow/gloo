@@ -1,5 +1,6 @@
 changelog:
   - type: NEW_FEATURE
+    resolvesIssue: false
     issueLink: https://github.com/solo-io/gloo/issues/3762
     description: >
       Allow an external tracing provider to be configured on a listener via the Gloo API.
