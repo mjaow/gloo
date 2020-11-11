@@ -3,6 +3,8 @@ package e2e_test
 import (
 	"context"
 	"fmt"
+	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/options/hcm"
+	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/options/tracing"
 	"net/http"
 	"time"
 
@@ -367,6 +369,92 @@ var _ = Describe("Gateway", func() {
 					TestUpstreamSslReachable()
 				})
 			})
+		})
+
+		Context("tracing", func() {
+
+			var (
+				cancel        context.CancelFunc
+				envoyInstance *services.EnvoyInstance
+			)
+
+			BeforeEach(func() {
+				_, cancel = context.WithCancel(context.Background())
+				defaults.HttpPort = services.NextBindPort()
+				defaults.HttpsPort = services.NextBindPort()
+
+				var err error
+				envoyInstance, err = envoyFactory.NewEnvoyInstance()
+				Expect(err).NotTo(HaveOccurred())
+
+				// zipkinServer = startZipkinServer()
+			})
+
+			AfterEach(func() {
+				if envoyInstance != nil {
+					_ = envoyInstance.Clean()
+				}
+				cancel()
+			})
+
+			It("should not send trace msgs to the zipkin server with nil provider", func() {
+				gatewayClient := testClients.GatewayClient
+				gw, err := gatewayClient.List(writeNamespace, clients.ListOpts{})
+				Expect(err).NotTo(HaveOccurred())
+
+				for _, g := range gw {
+					httpGateway := g.GetHttpGateway()
+					if httpGateway != nil {
+						httpGateway.Options = &gloov1.HttpListenerOptions{
+							HttpConnectionManagerSettings: &hcm.HttpConnectionManagerSettings{
+								Tracing: &tracing.ListenerTracingSettings{
+									Provider: nil,
+								},
+							},
+						}
+					}
+					_, err := gatewayClient.Write(g, clients.WriteOpts{Ctx: ctx, OverwriteExisting: true})
+					Expect(err).NotTo(HaveOccurred())
+				}
+
+				// write a virtual service so we have a proxy
+				vs := getTrivialVirtualServiceForUpstream("gloo-system", core.ResourceRef{Name: "test", Namespace: "test"})
+				_, err = testClients.VirtualServiceClient.Write(vs, clients.WriteOpts{})
+				Expect(err).NotTo(HaveOccurred())
+
+				// make sure it propagates to proxy
+				Eventually(
+					func() (int, error) {
+						numProvider := 0
+						proxy, err := testClients.ProxyClient.Read(writeNamespace, gatewaydefaults.GatewayProxyName, clients.ReadOpts{})
+						if err != nil {
+							return 0, err
+						}
+						for _, l := range proxy.Listeners {
+							if h := l.GetHttpListener(); h != nil {
+								if p := h.GetOptions(); p != nil {
+									if hcmSettings := p.GetHttpConnectionManagerSettings(); hcmSettings != nil {
+										if hcmSettings.Tracing.Provider != nil {
+											numProvider++
+										}
+									}
+								}
+							}
+						}
+						return numProvider, nil
+					}, "5s", "0.1s").Should(Equal(0))
+
+				//apiHit := make(chan bool, 1)
+				//registerZipkinHandler(&apiHit)
+
+				//testRequest := basicReq()
+				//Eventually(testRequest, 15, 1).Should(Not(ContainSubstring(`<title>Envoy Admin</title>`)))
+
+				//truez := true
+				//Eventually(apiHit, 5*time.Second).Should(Receive(&truez))
+			})
+
+			// TODO I'll add more tests, wanted to make sure my first one made sense
 		})
 	})
 })
