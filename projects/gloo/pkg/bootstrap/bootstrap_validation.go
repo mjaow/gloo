@@ -49,12 +49,17 @@ func ValidateBootstrap(ctx context.Context, bootstrapYaml string) error {
 }
 
 func BuildPerFilterBootstrapYaml(filterName string, msg proto.Message) string {
+
+	typedFilter := utils.MustMessageToAny(msg)
 	vhosts := []*envoy_config_route_v3.VirtualHost{
 		{
 			Name:    "placeholder_host",
 			Domains: []string{"*"},
 			TypedPerFilterConfig: map[string]*any.Any{
-				filterName: utils.MustGogoMessageToAnyGoProto(msg),
+				filterName: &any.Any{
+					TypeUrl: typedFilter.GetTypeUrl(),
+					Value: typedFilter.GetValue(),
+				}
 			},
 		},
 	}
