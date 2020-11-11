@@ -10,8 +10,10 @@ import (
 	gatewaydefaults "github.com/solo-io/gloo/projects/gateway/pkg/defaults"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/options/hcm"
+	static_plugin_gloo "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/options/static"
 	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/options/tracing"
 	gloohelpers "github.com/solo-io/gloo/test/helpers"
+	"github.com/solo-io/gloo/test/v1helpers"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"html"
@@ -128,26 +130,26 @@ var _ =Describe("Zipkin config loading", func() {
 			writeNamespace string
 		)
 
-		basicReq := func() func() (string, error) {
-			return func() (string, error) {
-				req, err := http.NewRequest("GET", fmt.Sprintf("http://%s:%d/", "localhost", 11084), nil)
-				if err != nil {
-					return "", err
-				}
-				req.Header.Set("Content-Type", "application/json")
-
-				// Set a random trace ID
-				req.Header.Set("x-client-trace-id", "test-trace-id-1234567890")
-
-				res, err := http.DefaultClient.Do(req)
-				if err != nil {
-					return "", err
-				}
-				defer res.Body.Close()
-				body, err := ioutil.ReadAll(res.Body)
-				return string(body), err
-			}
-		}
+		//basicReq := func() func() (string, error) {
+		//	return func() (string, error) {
+		//		req, err := http.NewRequest("GET", fmt.Sprintf("http://%s:%d/", "localhost", defaults.HttpPort), nil)
+		//		if err != nil {
+		//			return "", err
+		//		}
+		//		req.Header.Set("Content-Type", "application/json")
+		//
+		//		// Set a random trace ID
+		//		req.Header.Set("x-client-trace-id", "test-trace-id-1234567890")
+		//
+		//		res, err := http.DefaultClient.Do(req)
+		//		if err != nil {
+		//			return "", err
+		//		}
+		//		defer res.Body.Close()
+		//		body, err := ioutil.ReadAll(res.Body)
+		//		return string(body), err
+		//	}
+		//}
 
 		BeforeEach(func() {
 			ctx, cancel = context.WithCancel(context.Background())
@@ -243,14 +245,15 @@ var _ =Describe("Zipkin config loading", func() {
 		})
 
 		FIt("should send trace msgs with zipkin provider", func() {
-			envoyInstance.Run(testClients.GlooPort)
+			err := envoyInstance.RunWithRole(writeNamespace+"~"+gatewaydefaults.GatewayProxyName, testClients.GlooPort)
+			Expect(err).NotTo(HaveOccurred())
 
 			gatewayClient := testClients.GatewayClient
 			gw, err := gatewayClient.List(writeNamespace, clients.ListOpts{})
 			Expect(err).NotTo(HaveOccurred())
 
 			zipkinConfig := &envoy_config_trace_v3.ZipkinConfig{
-				CollectorCluster:         "zipkin",
+				CollectorCluster:         "zipkin_default",
 				CollectorEndpoint:        "/api/v2/spans",
 				CollectorEndpointVersion: envoy_config_trace_v3.ZipkinConfig_HTTP_JSON,
 			}
@@ -275,9 +278,47 @@ var _ =Describe("Zipkin config loading", func() {
 			}
 
 			// write a virtual service so we have a proxy
-			vs := getTrivialVirtualServiceForUpstream("gloo-system", core.ResourceRef{Name: "test", Namespace: "test"})
+			testUpstream := v1helpers.NewTestHttpUpstream(ctx, envoyInstance.LocalAddr())
+			_, err = testClients.UpstreamClient.Write(testUpstream.Upstream, clients.WriteOpts{})
+			Expect(err).NotTo(HaveOccurred())
+
+			zipkinUs := &gloov1.Upstream{
+				Metadata:                    core.Metadata{
+					Name:                 "zipkin",
+					Namespace:            "default",
+				},
+				UpstreamType: &gloov1.Upstream_Static{
+					Static: &static_plugin_gloo.UpstreamSpec{
+						Hosts: []*static_plugin_gloo.Host{
+							{
+								Addr:                 "127.0.0.1",
+								Port:                 9411,
+							},
+						},
+					},
+				},
+			}
+			_, err = testClients.UpstreamClient.Write(zipkinUs, clients.WriteOpts{})
+			Expect(err).NotTo(HaveOccurred())
+
+			vs := getTrivialVirtualServiceForUpstream("gloo-system", testUpstream.Upstream.Metadata.Ref())
 			_, err = testClients.VirtualServiceClient.Write(vs, clients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
+
+
+			// make sure it propagates to proxy
+			Eventually(
+				func() (*gloov1.Proxy, error) {
+					return testClients.ProxyClient.Read(writeNamespace, gatewaydefaults.GatewayProxyName, clients.ReadOpts{})
+				}, "5s", "0.1s").ShouldNot(BeNil())
+
+			TestUpstreamReachable := func() {
+				v1helpers.TestUpstreamReachable(defaults.HttpPort, testUpstream, nil)
+			}
+
+			TestUpstreamReachable()
+
+
 
 			apiHit := make(chan bool, 1)
 
@@ -290,8 +331,8 @@ var _ =Describe("Zipkin config loading", func() {
 			})
 			startZipkinServer()
 
-			testRequest := basicReq()
-			Eventually(testRequest, 15, 1).Should(ContainSubstring(`<title>Envoy Admin</title>`))
+			//testRequest := basicReq()
+			//Eventually(testRequest, "15s", "1s").Should(ContainSubstring(`<title>Envoy Admin</title>`))
 
 			truez := true
 			Eventually(apiHit, 5*time.Second).Should(Receive(&truez))
