@@ -3,10 +3,11 @@ package e2e_test
 import (
 	"context"
 	"fmt"
-	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/options/hcm"
-	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/options/tracing"
 	"net/http"
 	"time"
+
+	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/options/hcm"
+	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/options/tracing"
 
 	gatewaydefaults "github.com/solo-io/gloo/projects/gateway/pkg/defaults"
 	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/core/matchers"
@@ -386,8 +387,6 @@ var _ = Describe("Gateway", func() {
 				var err error
 				envoyInstance, err = envoyFactory.NewEnvoyInstance()
 				Expect(err).NotTo(HaveOccurred())
-
-				// zipkinServer = startZipkinServer()
 			})
 
 			AfterEach(func() {
