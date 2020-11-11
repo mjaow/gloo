@@ -29,4 +29,3 @@ func (m *MultiAnyResolver) Resolve(typeUrl string) (proto.Message, error) {
 	}
 	return reflect.New(mt.Elem()).Interface().(proto.Message), nil
 }
-
