@@ -136,9 +136,10 @@ Assuming that you have deployed Gloo in the namespace `gloo-system`, run the fol
 kubectl edit deployments -n gloo-system gateway-proxy
 ```
 
-Then update the `spec.template` section of the yaml with these additional annotations.
+Then update the `spec.template.metadata` section of the yaml with these additional annotations.  Be sure to add the annotations in the `spec.template.metadata.annotations` section, not the `metadata.annotations` section.  Adding them to the wrong section will cause the annotations not to be propagated through to the `gateway-proxy` pod.
 
 ```yaml
+spec:
   template:
     metadata:
       annotations:
