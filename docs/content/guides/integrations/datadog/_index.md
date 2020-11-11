@@ -217,7 +217,9 @@ envoy (1.14.0)
       Instance ID: envoy:f312c8247060dc62 [OK]
 ```
 
-That means the Datadog agent has fired up the Envoy integration and should be collecting metrics. You can now verify this by going back to the portal and checking through the Metrics Explorer.
+That means the Datadog agent has fired up the Envoy integration and should be collecting metrics. You can now verify this by going back to the Datadog portal and navigating to the Envoy Overview dashboard.
+
+![Envoy Overview Dashboard](./envoy-dd-dash-1.png)
 
 ---
 
