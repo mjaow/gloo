@@ -5,11 +5,9 @@ import (
 	"context"
 	"os"
 	"os/exec"
-	"reflect"
-	"strings"
 
-	proto2 "github.com/gogo/protobuf/proto"
 	"github.com/golang/protobuf/jsonpb"
+	"github.com/solo-io/gloo/pkg/utils/protoutils"
 	"github.com/solo-io/gloo/projects/gloo/pkg/utils"
 
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
@@ -111,31 +109,10 @@ func BuildPerFilterBootstrapYaml(filterName string, msg proto.Message) string {
 
 	buf := &bytes.Buffer{}
 	marshaler := &jsonpb.Marshaler{
-		AnyResolver: &anyResolver{},
+		AnyResolver: &protoutils.MultiAnyResolver{},
 		OrigName:    true,
 	}
 	marshaler.Marshal(buf, bootstrap)
-
-	// b, _ := protoutils.MarshalBytes(bootstrap)
 	json := string(buf.Bytes())
 	return json // returns a json, but json is valid yaml
-}
-
-type anyResolver struct{}
-
-func (a anyResolver) Resolve(typeUrl string) (proto.Message, error) {
-	messageType := typeUrl
-	if slash := strings.LastIndex(typeUrl, "/"); slash >= 0 {
-		messageType = messageType[slash+1:]
-	}
-	var mt reflect.Type
-	mt = proto.MessageType(messageType)
-	if mt == nil {
-		mt = proto2.MessageType(messageType)
-		if mt == nil {
-			return nil, eris.Errorf("unknown message type %q", messageType)
-		}
-	}
-	return reflect.New(mt.Elem()).Interface().(proto.Message), nil
-
 }
