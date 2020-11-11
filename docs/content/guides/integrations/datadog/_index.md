@@ -51,7 +51,7 @@ If this is the first time you've logged into Datadog, you can also follow the wi
 From the Datadog portal, select Integrations and the Agents subcategory. Then select the Kubernetes agent. Under the directions, you can find the Helm command to install the Datadog agent on your cluster. It will look like this:
 
 ```bash
-helm install datadog-gloo -f datadog-values.yaml --set datadog.apiKey=API_KEY stable/datadog 
+helm install datadog-gloo -f datadog-values.yaml --set datadog.apiKey=API_KEY datadog/datadog 
 ```
 
 Copy this command for later use.
