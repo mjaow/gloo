@@ -973,7 +973,7 @@ var _ = Describe("Translator", func() {
 				}}
 			})
 
-			It("should translate valid HTTP header name", func() {
+			It("should warn about invalid http header name", func() {
 				_, _, report, _ := translator.Translate(params, proxy)
 				routeReportWarning := report.GetListenerReports()[0].GetHttpListenerReport().GetVirtualHostReports()[0].GetRouteReports()[0].GetWarnings()[0]
 				reason := routeReportWarning.GetReason()
