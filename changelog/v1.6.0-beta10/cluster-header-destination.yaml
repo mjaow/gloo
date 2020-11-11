@@ -2,3 +2,4 @@ changelog:
   - type: NEW_FEATURE
     description: Expose envoy's cluster_header field in the gloo api
     issueLink: https://github.com/solo-io/gloo/issues/3749
+    resolvesIssue: false
