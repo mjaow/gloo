@@ -206,7 +206,7 @@ kubectl get pods -o wide --field-selector spec.nodeName=$NODE_NAME
 You may see two pods returned. You want the one that doesn't have `kube-state-metrics` in the name. Now you can run the `agent status` command from inside the Datadog agent pod. Change the `POD_NAME` to reflect your pod name.
 
 ```bash
-kubectl exec -it POD_NAME agent status | grep envoy
+kubectl exec POD_NAME -- agent status | grep envoy
 ```
 
 The output should be similar to this:
