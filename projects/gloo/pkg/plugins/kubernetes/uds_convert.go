@@ -47,7 +47,7 @@ func (uc *KubeUpstreamConverter) CreateUpstream(ctx context.Context, svc *kubev1
 	meta := svc.ObjectMeta
 	coremeta := kubeutils.FromKubeMeta(meta)
 	coremeta.ResourceVersion = ""
-	coremeta.Name = strings.ToLower(UpstreamName(meta.Namespace, meta.Name, port.Port))
+	coremeta.Name = UpstreamName(meta.Namespace, meta.Name, port.Port)
 	labels := coremeta.Labels
 	coremeta.Labels = make(map[string]string)
 
