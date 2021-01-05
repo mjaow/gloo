@@ -67,6 +67,7 @@ func createJwtProviders(providers map[string]*jwt.Provider) (*envoyjwt.JwtAuthen
 		if provider, err := convertProvider(p); err != nil {
 			return nil, fmt.Errorf("provider %s with error %v", k, err)
 		} else {
+			//TODO fix rules-providers relationship
 			providersMap[k] = provider
 
 			rules = append(rules, &envoyjwt.RequirementRule{
