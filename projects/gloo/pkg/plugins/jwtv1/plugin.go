@@ -1,4 +1,4 @@
-package jwt
+package jwtv1
 
 import (
 	"fmt"

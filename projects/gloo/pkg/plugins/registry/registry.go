@@ -21,7 +21,7 @@ import (
 	"github.com/solo-io/gloo/projects/gloo/pkg/plugins/hcm"
 	"github.com/solo-io/gloo/projects/gloo/pkg/plugins/headers"
 	"github.com/solo-io/gloo/projects/gloo/pkg/plugins/healthcheck"
-	"github.com/solo-io/gloo/projects/gloo/pkg/plugins/jwt"
+	"github.com/solo-io/gloo/projects/gloo/pkg/plugins/jwtv1"
 	"github.com/solo-io/gloo/projects/gloo/pkg/plugins/kubernetes"
 	"github.com/solo-io/gloo/projects/gloo/pkg/plugins/linkerd"
 	"github.com/solo-io/gloo/projects/gloo/pkg/plugins/listener"
@@ -76,7 +76,7 @@ var globalRegistry = func(opts bootstrap.Opts, pluginExtensions ...func() plugin
 		headers.NewPlugin(),
 		healthcheck.NewPlugin(),
 		extauth.NewCustomAuthPlugin(),
-		jwt.NewJwtPlugin(),
+		jwtv1.NewJwtPlugin(),
 		ratelimit.NewPlugin(),
 		wasm.NewPlugin(),
 		gzip.NewPlugin(),
